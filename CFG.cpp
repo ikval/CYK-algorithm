@@ -1,6 +1,9 @@
 #include "CFG.h"
 #include "src/json.hpp"
+#include "CYK.h"
+#include <set>
 #include <fstream>
+#include <iomanip>
 using json = nlohmann::json;
 
 CFG::CFG(const string& filename) {
@@ -72,5 +75,36 @@ void CFG::print() const {
 
     cout << "S = " << S << endl;
 }
+
+vector<string> CFG::findCandidates(const string& produced_str) {
+    vector<string> var_candidates;
+
+    for (auto &p_it : P) {
+        vector<string> p_body = p_it.getBody();
+        for (const string &prod : p_body) {
+            if (produced_str == prod) {
+                var_candidates.push_back(p_it.getHead());
+            }
+        }
+    }
+
+    return var_candidates;
+}
+bool CFG::accepts(const string& s) {
+    CYK* cyk = new CYK(s);
+    int str_len = cyk->getStringLength();
+
+    for (int i = 0; i < str_len; i++) {
+        for (int j = 0; j != str_len - i; j++) {
+            string prod_str = cyk->table[i][j]->getProdStr();
+
+            vector<string> var_cand = findCandidates(prod_str);
+            cyk->table[i][j]->setItems(var_cand);
+        }
+    }
+    return false;
+}
+
+
 
 

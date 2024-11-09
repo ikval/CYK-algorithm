@@ -19,6 +19,10 @@ public:
     CFG(const string& filePath);
 
     void print() const;
+
+    vector<string> findCandidates(const string& produced_str);
+
+    bool accepts(const string& s);
 };
 
 #endif // CFG_H
