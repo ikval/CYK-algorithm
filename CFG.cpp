@@ -4,6 +4,7 @@
 #include <set>
 #include <fstream>
 #include <iomanip>
+
 using json = nlohmann::json;
 
 CFG::CFG(const string& filename) {
@@ -76,33 +77,111 @@ void CFG::print() const {
     cout << "S = " << S << endl;
 }
 
-vector<string> CFG::findCandidates(const string& produced_str) {
+vector<string> CFG::addInstantCandidates(const string& produced_str) {
     vector<string> var_candidates;
 
-    for (auto &p_it : P) {
-        vector<string> p_body = p_it.getBody();
-        for (const string &prod : p_body) {
-            if (produced_str == prod) {
-                var_candidates.push_back(p_it.getHead());
+    for (const auto& production : P) {
+        const vector<string>& body = production.getBody();
+
+        string body_str = "";
+        for (size_t i = 0; i < body.size(); ++i) {
+            body_str += body[i];
+            if (i < body.size() - 1) {
+                body_str += " ";
             }
+        }
+
+        if (produced_str == body_str) {
+            var_candidates.push_back(production.getHead());
         }
     }
 
     return var_candidates;
 }
+
+void CFG::printCYKTable(CYK* cyk) const {
+    int str_len = cyk->getStringLength();
+    vector<vector<string>> table_strs(str_len);
+
+    vector<int> col_widths(str_len, 0);
+
+    for (int i = str_len - 1; i >= 0; i--) {
+        for (int j = 0; j < str_len - i; j++) {
+            vector<string> items = cyk->table[i][j]->getItems();
+
+            string cell_str = items.empty() || items[0] == "-" ? "{}" : "{";
+
+            for (size_t k = 0; k < items.size(); ++k) {
+                cell_str += items[k];
+                if (k < items.size() - 1) {
+                    cell_str += ", ";
+                }
+            }
+            if (!items.empty() && items[0] != "-") {
+                cell_str += "}";
+            }
+
+            table_strs[i].push_back(cell_str);
+            col_widths[j] = max(col_widths[j], static_cast<int>(cell_str.size()));
+        }
+    }
+
+    for (int i = str_len - 1; i >= 0; i--) {
+        cout << "| ";
+        for (int j = 0; j < str_len - i; j++) {
+            cout << setw(col_widths[j]) << left << table_strs[i][j] << " | ";
+        }
+        cout << endl;
+    }
+}
+
+
 bool CFG::accepts(const string& s) {
     CYK* cyk = new CYK(s);
     int str_len = cyk->getStringLength();
 
-    for (int i = 0; i < str_len; i++) {
-        for (int j = 0; j != str_len - i; j++) {
-            string prod_str = cyk->table[i][j]->getProdStr();
+    // Base Case: Length 1 substrings
+    for (int j = 0; j < str_len; j++) {
+        string prod_str = cyk->table[0][j]->getProdStr();
+        vector<string> candidates = addInstantCandidates(prod_str);
+        cyk->table[0][j]->setItems(candidates);
+    }
 
-            vector<string> var_cand = findCandidates(prod_str);
-            cyk->table[i][j]->setItems(var_cand);
+    // Recursive Case: Length > 1 substrings
+    for (int len = 2; len <= str_len; len++) {
+        for (int i = 0; i <= str_len - len; i++) {
+            vector<string> candidates;
+
+            for (int k = 1; k < len; k++) {
+                vector<string> leftVars = cyk->table[k-1][i]->getItems();
+                vector<string> rightVars = cyk->table[len-k-1][i+k]->getItems();
+
+                for (const string& A : leftVars) {
+                    for (const string& B : rightVars) {
+                        string combined = A + " " + B;
+
+                        vector<string> new_candidates = addInstantCandidates(combined);
+                        candidates.insert(candidates.end(), new_candidates.begin(), new_candidates.end());
+                    }
+                }
+            }
+
+            sort(candidates.begin(), candidates.end());
+            candidates.erase(unique(candidates.begin(), candidates.end()), candidates.end());
+            if (!candidates.empty()) {
+                cyk->table[len-1][i]->setItems(candidates);
+            }
         }
     }
-    return false;
+
+    printCYKTable(cyk);
+
+    vector<string> topCandidates = cyk->table[str_len-1][0]->getItems();
+    bool isAccepted = find(topCandidates.begin(), topCandidates.end(), S) != topCandidates.end();
+    cout << (isAccepted ? "true" : "false") << endl;
+
+    delete cyk;
+    return isAccepted;
 }
 
 

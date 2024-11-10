@@ -10,7 +10,7 @@ CYK::CYK(const string &s) {
     for (int i = str_len; i > 0; i--) {
         vector<TableCell*> table_row;
         for (int j = 0; j < i; j++) {
-            auto* cell = new TableCell("-");
+            auto* cell = new TableCell("");
             table_row.push_back(cell);
         }
         table.push_back(table_row);
@@ -28,6 +28,14 @@ CYK::CYK(const string &s) {
     }
 }
 
+CYK::~CYK() {
+    for (auto& row : table) {
+        for (auto& cell : row) {
+            delete cell;
+        }
+    }
+}
+
 vector<char> CYK::getTerminals() const {
     return terminals;
 }
@@ -35,3 +43,4 @@ vector<char> CYK::getTerminals() const {
 int CYK::getStringLength() const {
     return str_len;
 }
+

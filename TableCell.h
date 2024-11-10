@@ -26,6 +26,10 @@ public:
     string getProdStr() const {
         return produced_str;
     }
+
+    vector<string> getItems() const {
+        return items;
+    }
 };
 
 

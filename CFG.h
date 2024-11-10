@@ -6,6 +6,8 @@
 #include <map>
 #include <string>
 #include "Production.h"
+#include "CYK.h"
+
 using namespace std;
 
 class CFG {
@@ -20,7 +22,9 @@ public:
 
     void print() const;
 
-    vector<string> findCandidates(const string& produced_str);
+    vector<string> addInstantCandidates(const string& produced_str);
+
+    void printCYKTable(CYK* cyk) const;
 
     bool accepts(const string& s);
 };

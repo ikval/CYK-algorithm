@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include <string>
+#include "TableCell.h"
 
 using namespace std;
 
@@ -15,6 +16,7 @@ private:
 public:
     vector<vector<TableCell*>> table;
     explicit CYK(const string& s);
+    ~CYK();
     vector<char> getTerminals() const;
     int getStringLength() const;
 };
