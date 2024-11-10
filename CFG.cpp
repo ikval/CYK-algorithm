@@ -1,6 +1,6 @@
 #include "CFG.h"
 #include "src/json.hpp"
-#include "CYK.h"
+#include "cyk/CYK.h"
 #include <set>
 #include <fstream>
 #include <iomanip>

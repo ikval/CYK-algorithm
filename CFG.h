@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 #include "Production.h"
-#include "CYK.h"
+#include "cyk/CYK.h"
 
 using namespace std;
 

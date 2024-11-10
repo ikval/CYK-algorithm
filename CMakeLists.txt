@@ -12,8 +12,8 @@ add_executable(CYK_algorithm
         CFG.h
         main.cpp
         Production.h
-        CYK.h
-        CYK.cpp
-        TableCell.h
-        TableCell.cpp
+        cyk/CYK.h
+        cyk/CYK.cpp
+        cyk/TableCell.h
+        cyk/TableCell.cpp
 )
